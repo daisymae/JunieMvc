@@ -8,7 +8,8 @@ class JunieMvcApplicationTests {
 
   @Test
   void contextLoads() {
-    /* TODO */
+    // This test verifies that the application context loads successfully
+    // No assertions needed - test will fail if context fails to load
   }
 
 }
