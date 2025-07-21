@@ -47,4 +47,16 @@ public class BeerServiceImpl implements BeerService {
     public List<Beer> getAllBeers() {
         return beerRepository.findAll();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteBeerById(Integer id) {
+        if (beerRepository.existsById(id)) {
+            beerRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }

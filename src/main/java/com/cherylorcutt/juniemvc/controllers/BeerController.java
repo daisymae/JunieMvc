@@ -61,4 +61,39 @@ public class BeerController {
     public List<Beer> getAllBeers() {
         return beerService.getAllBeers();
     }
+
+    /**
+     * Update an existing beer
+     * 
+     * @param id the beer ID
+     * @param beer the updated beer data
+     * @return the updated beer if found with HTTP status 200 (OK), or HTTP status 404 (NOT_FOUND) if not found
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Beer> updateBeer(@PathVariable Integer id, @RequestBody Beer beer) {
+        Optional<Beer> existingBeer = beerService.getBeerById(id);
+        if (existingBeer.isPresent()) {
+            beer.setId(id);
+            Beer updatedBeer = beerService.saveBeer(beer);
+            return ResponseEntity.ok(updatedBeer);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Delete a beer by its ID
+     * 
+     * @param id the beer ID
+     * @return HTTP status 204 (NO_CONTENT) if deleted, or HTTP status 404 (NOT_FOUND) if not found
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBeer(@PathVariable Integer id) {
+        boolean deleted = beerService.deleteBeerById(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

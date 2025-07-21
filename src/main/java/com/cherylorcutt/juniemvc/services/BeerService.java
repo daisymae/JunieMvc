@@ -32,4 +32,12 @@ public interface BeerService {
      * @return a list of all beers
      */
     List<Beer> getAllBeers();
+
+    /**
+     * Delete a beer by its ID
+     * 
+     * @param id the beer ID
+     * @return true if the beer was deleted, false if it was not found
+     */
+    boolean deleteBeerById(Integer id);
 }
