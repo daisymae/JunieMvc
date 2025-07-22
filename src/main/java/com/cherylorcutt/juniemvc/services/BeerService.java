@@ -1,6 +1,6 @@
 package com.cherylorcutt.juniemvc.services;
 
-import com.cherylorcutt.juniemvc.entities.Beer;
+import com.cherylorcutt.juniemvc.models.BeerDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,25 +13,25 @@ public interface BeerService {
     /**
      * Save a new beer or update an existing one
      * 
-     * @param beer the beer to save
-     * @return the saved beer
+     * @param beerDto the beer DTO to save
+     * @return the saved beer DTO
      */
-    Beer saveBeer(Beer beer);
+    BeerDto saveBeer(BeerDto beerDto);
     
     /**
      * Get a beer by its ID
      * 
      * @param id the beer ID
-     * @return an Optional containing the beer if found, or empty if not found
+     * @return an Optional containing the beer DTO if found, or empty if not found
      */
-    Optional<Beer> getBeerById(Integer id);
+    Optional<BeerDto> getBeerById(Integer id);
     
     /**
      * Get all beers
      * 
-     * @return a list of all beers
+     * @return a list of all beer DTOs
      */
-    List<Beer> getAllBeers();
+    List<BeerDto> getAllBeers();
 
     /**
      * Delete a beer by its ID

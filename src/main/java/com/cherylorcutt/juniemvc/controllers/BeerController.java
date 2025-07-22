@@ -1,7 +1,8 @@
 package com.cherylorcutt.juniemvc.controllers;
 
-import com.cherylorcutt.juniemvc.entities.Beer;
+import com.cherylorcutt.juniemvc.models.BeerDto;
 import com.cherylorcutt.juniemvc.services.BeerService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,24 +31,24 @@ public class BeerController {
     /**
      * Create a new beer
      * 
-     * @param beer the beer to create
-     * @return the created beer with HTTP status 201 (CREATED)
+     * @param beerDto the beer DTO to create
+     * @return the created beer DTO with HTTP status 201 (CREATED)
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Beer createBeer(@RequestBody Beer beer) {
-        return beerService.saveBeer(beer);
+    public BeerDto createBeer(@Valid @RequestBody BeerDto beerDto) {
+        return beerService.saveBeer(beerDto);
     }
 
     /**
      * Get a beer by its ID
      * 
      * @param id the beer ID
-     * @return the beer if found with HTTP status 200 (OK), or HTTP status 404 (NOT_FOUND) if not found
+     * @return the beer DTO if found with HTTP status 200 (OK), or HTTP status 404 (NOT_FOUND) if not found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Beer> getBeerById(@PathVariable Integer id) {
-        Optional<Beer> beer = beerService.getBeerById(id);
+    public ResponseEntity<BeerDto> getBeerById(@PathVariable Integer id) {
+        Optional<BeerDto> beer = beerService.getBeerById(id);
         return beer.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -55,10 +56,10 @@ public class BeerController {
     /**
      * Get all beers
      * 
-     * @return a list of all beers with HTTP status 200 (OK)
+     * @return a list of all beer DTOs with HTTP status 200 (OK)
      */
     @GetMapping
-    public List<Beer> getAllBeers() {
+    public List<BeerDto> getAllBeers() {
         return beerService.getAllBeers();
     }
 
@@ -66,15 +67,15 @@ public class BeerController {
      * Update an existing beer
      * 
      * @param id the beer ID
-     * @param beer the updated beer data
-     * @return the updated beer if found with HTTP status 200 (OK), or HTTP status 404 (NOT_FOUND) if not found
+     * @param beerDto the updated beer DTO data
+     * @return the updated beer DTO if found with HTTP status 200 (OK), or HTTP status 404 (NOT_FOUND) if not found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Beer> updateBeer(@PathVariable Integer id, @RequestBody Beer beer) {
-        Optional<Beer> existingBeer = beerService.getBeerById(id);
+    public ResponseEntity<BeerDto> updateBeer(@PathVariable Integer id, @Valid @RequestBody BeerDto beerDto) {
+        Optional<BeerDto> existingBeer = beerService.getBeerById(id);
         if (existingBeer.isPresent()) {
-            beer.setId(id);
-            Beer updatedBeer = beerService.saveBeer(beer);
+            beerDto.setId(id);
+            BeerDto updatedBeer = beerService.saveBeer(beerDto);
             return ResponseEntity.ok(updatedBeer);
         } else {
             return ResponseEntity.notFound().build();

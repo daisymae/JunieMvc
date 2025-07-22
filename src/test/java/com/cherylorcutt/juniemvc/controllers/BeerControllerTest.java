@@ -1,6 +1,6 @@
 package com.cherylorcutt.juniemvc.controllers;
 
-import com.cherylorcutt.juniemvc.entities.Beer;
+import com.cherylorcutt.juniemvc.models.BeerDto;
 import com.cherylorcutt.juniemvc.services.BeerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,12 +47,12 @@ class BeerControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private Beer testBeer;
-    private List<Beer> testBeers;
+    private BeerDto testBeerDto;
+    private List<BeerDto> testBeerDtos;
 
     @BeforeEach
     void setUp() {
-        testBeer = Beer.builder()
+        testBeerDto = BeerDto.builder()
                 .id(1)
                 .beerName("Test Beer")
                 .beerStyle("IPA")
@@ -61,7 +61,7 @@ class BeerControllerTest {
                 .quantityOnHand(100)
                 .build();
 
-        Beer testBeer2 = Beer.builder()
+        BeerDto testBeerDto2 = BeerDto.builder()
                 .id(2)
                 .beerName("Another Beer")
                 .beerStyle("Stout")
@@ -70,13 +70,13 @@ class BeerControllerTest {
                 .quantityOnHand(200)
                 .build();
 
-        testBeers = Arrays.asList(testBeer, testBeer2);
+        testBeerDtos = Arrays.asList(testBeerDto, testBeerDto2);
     }
 
     @Test
     void testCreateBeer() throws Exception {
         // Given
-        Beer beerToCreate = Beer.builder()
+        BeerDto beerDtoToCreate = BeerDto.builder()
                 .beerName("New Beer")
                 .beerStyle("Lager")
                 .upc("789012")
@@ -84,8 +84,8 @@ class BeerControllerTest {
                 .quantityOnHand(50)
                 .build();
 
-        given(beerService.saveBeer(any(Beer.class))).willReturn(
-                Beer.builder()
+        given(beerService.saveBeer(any(BeerDto.class))).willReturn(
+                BeerDto.builder()
                         .id(3)
                         .beerName("New Beer")
                         .beerStyle("Lager")
@@ -98,7 +98,7 @@ class BeerControllerTest {
         // When/Then
         mockMvc.perform(post("/api/v1/beers")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(beerToCreate)))
+                .content(objectMapper.writeValueAsString(beerDtoToCreate)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(3)))
                 .andExpect(jsonPath("$.beerName", is("New Beer")))
@@ -107,13 +107,34 @@ class BeerControllerTest {
                 .andExpect(jsonPath("$.price", is(10.99)))
                 .andExpect(jsonPath("$.quantityOnHand", is(50)));
 
-        verify(beerService, Mockito.atLeastOnce()).saveBeer(any(Beer.class));
+        verify(beerService, Mockito.atLeastOnce()).saveBeer(any(BeerDto.class));
+    }
+
+    @Test
+    void testCreateBeerValidationError() throws Exception {
+        // Given
+        BeerDto invalidBeerDto = BeerDto.builder()
+                .beerName("")  // Invalid: empty name
+                .beerStyle("Lager")
+                .upc("789012")
+                .price(new BigDecimal("-1.0"))  // Invalid: negative price
+                .quantityOnHand(-10)  // Invalid: negative quantity
+                .build();
+
+        // When/Then
+        mockMvc.perform(post("/api/v1/beers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidBeerDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.beerName").exists())  // Expect beerName validation error
+                .andExpect(jsonPath("$.price").exists())     // Expect price validation error
+                .andExpect(jsonPath("$.quantityOnHand").exists());  // Expect quantityOnHand validation error
     }
 
     @Test
     void testGetBeerById() throws Exception {
         // Given
-        given(beerService.getBeerById(1)).willReturn(Optional.of(testBeer));
+        given(beerService.getBeerById(1)).willReturn(Optional.of(testBeerDto));
 
         // When/Then
         mockMvc.perform(get("/api/v1/beers/1"))
@@ -143,7 +164,7 @@ class BeerControllerTest {
     @Test
     void testGetAllBeers() throws Exception {
         // Given
-        given(beerService.getAllBeers()).willReturn(testBeers);
+        given(beerService.getAllBeers()).willReturn(testBeerDtos);
 
         // When/Then
         mockMvc.perform(get("/api/v1/beers"))
@@ -160,7 +181,7 @@ class BeerControllerTest {
     @Test
     void testUpdateBeer() throws Exception {
         // Given
-        Beer beerToUpdate = Beer.builder()
+        BeerDto beerDtoToUpdate = BeerDto.builder()
                 .beerName("Updated Beer")
                 .beerStyle("Pale Ale")
                 .upc("123456")
@@ -168,7 +189,7 @@ class BeerControllerTest {
                 .quantityOnHand(150)
                 .build();
 
-        Beer updatedBeer = Beer.builder()
+        BeerDto updatedBeerDto = BeerDto.builder()
                 .id(1)
                 .beerName("Updated Beer")
                 .beerStyle("Pale Ale")
@@ -177,13 +198,13 @@ class BeerControllerTest {
                 .quantityOnHand(150)
                 .build();
 
-        given(beerService.getBeerById(1)).willReturn(Optional.of(testBeer));
-        given(beerService.saveBeer(any(Beer.class))).willReturn(updatedBeer);
+        given(beerService.getBeerById(1)).willReturn(Optional.of(testBeerDto));
+        given(beerService.saveBeer(any(BeerDto.class))).willReturn(updatedBeerDto);
 
         // When/Then
         mockMvc.perform(put("/api/v1/beers/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(beerToUpdate)))
+                .content(objectMapper.writeValueAsString(beerDtoToUpdate)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.beerName", is("Updated Beer")))
@@ -193,13 +214,34 @@ class BeerControllerTest {
                 .andExpect(jsonPath("$.quantityOnHand", is(150)));
 
         verify(beerService, Mockito.atLeastOnce()).getBeerById(1);
-        verify(beerService, Mockito.atLeastOnce()).saveBeer(any(Beer.class));
+        verify(beerService, Mockito.atLeastOnce()).saveBeer(any(BeerDto.class));
+    }
+
+    @Test
+    void testUpdateBeerValidationError() throws Exception {
+        // Given
+        BeerDto invalidBeerDto = BeerDto.builder()
+                .beerName("")  // Invalid: empty name
+                .beerStyle("Pale Ale")
+                .upc("123456")
+                .price(new BigDecimal("-1.0"))  // Invalid: negative price
+                .quantityOnHand(-10)  // Invalid: negative quantity
+                .build();
+
+        // When/Then
+        mockMvc.perform(put("/api/v1/beers/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidBeerDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.beerName").exists())  // Expect beerName validation error
+                .andExpect(jsonPath("$.price").exists())     // Expect price validation error
+                .andExpect(jsonPath("$.quantityOnHand").exists());  // Expect quantityOnHand validation error
     }
 
     @Test
     void testUpdateBeerNotFound() throws Exception {
         // Given
-        Beer beerToUpdate = Beer.builder()
+        BeerDto beerDtoToUpdate = BeerDto.builder()
                 .beerName("Updated Beer")
                 .beerStyle("Pale Ale")
                 .upc("123456")
@@ -214,7 +256,7 @@ class BeerControllerTest {
         // When/Then
         mockMvc.perform(put("/api/v1/beers/999")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(beerToUpdate)))
+                .content(objectMapper.writeValueAsString(beerDtoToUpdate)))
                 .andExpect(status().isNotFound());
 
         // Verify with more specific argument matchers
@@ -222,7 +264,7 @@ class BeerControllerTest {
         
         // We'll skip this verification since it's causing issues
         // The controller is correctly returning 404 which is what we care about
-        // verify(beerService, Mockito.never()).saveBeer(any(Beer.class));
+        // verify(beerService, Mockito.never()).saveBeer(any(BeerDto.class));
     }
 
     @Test
